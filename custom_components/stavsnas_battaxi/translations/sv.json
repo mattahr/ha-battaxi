@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Stavsnäs Båttaxi",
+        "description": "Välj den linje du vill följa. Linjer och bryggor hämtas från Båttaxis boknings-API.",
+        "data": {"line": "Linje"}
+      },
+      "reconfigure": {
+        "title": "Stavsnäs Båttaxi",
+        "description": "Välj den linje du vill följa. Linjer och bryggor hämtas från Båttaxis boknings-API.",
+        "data": {"line": "Linje"}
+      },
+      "origin": {
+        "title": "Från brygga",
+        "description": "Linje: {line}",
+        "data": {"origin": "Från brygga"}
+      },
+      "destination": {
+        "title": "Till brygga",
+        "description": "Linje: {line}\nFrån: {origin}",
+        "data": {"destination": "Till brygga"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Kunde inte nå Båttaxis API. Försök igen senare.",
+      "invalid_route": "Den bryggan trafikeras inte efter vald avgångsbrygga."
+    },
+    "abort": {
+      "already_configured": "Den här sträckan är redan konfigurerad.",
+      "cannot_connect": "Kunde inte hämta linjer och bryggor från Båttaxis API. Försök igen senare.",
+      "no_lines": "Båttaxis API returnerade inga linjer med sträckor.",
+      "reconfigure_successful": "Sträckan uppdaterades."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "bookable": {"name": "Bokningsbar"}
+    },
+    "sensor": {
+      "next_departure": {"name": "Nästa avgång"},
+      "next_departure_text": {"name": "Nästa avgång text"},
+      "next_arrival": {"name": "Nästa ankomst"},
+      "available_seats": {"name": "Lediga platser"},
+      "departures_today": {"name": "Avgångar idag"},
+      "departures_today_text": {"name": "Avgångar idag text"}
+    }
+  }
+}

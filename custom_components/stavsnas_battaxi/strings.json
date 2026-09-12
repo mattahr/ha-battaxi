@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Stavsnäs Båttaxi",
+        "description": "Select the line you want to follow. Lines and piers are fetched from Båttaxi's booking API.",
+        "data": {"line": "Line"}
+      },
+      "reconfigure": {
+        "title": "Stavsnäs Båttaxi",
+        "description": "Select the line you want to follow. Lines and piers are fetched from Båttaxi's booking API.",
+        "data": {"line": "Line"}
+      },
+      "origin": {
+        "title": "From pier",
+        "description": "Line: {line}",
+        "data": {"origin": "From pier"}
+      },
+      "destination": {
+        "title": "To pier",
+        "description": "Line: {line}\nFrom: {origin}",
+        "data": {"destination": "To pier"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach Båttaxi's API. Try again later.",
+      "invalid_route": "That pier is not served after the selected departure pier."
+    },
+    "abort": {
+      "already_configured": "This route is already configured.",
+      "cannot_connect": "Could not fetch lines and piers from Båttaxi's API. Try again later.",
+      "no_lines": "Båttaxi's API returned no lines with routes.",
+      "reconfigure_successful": "The route was updated."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "bookable": {"name": "Bookable"}
+    },
+    "sensor": {
+      "next_departure": {"name": "Next departure"},
+      "next_departure_text": {"name": "Next departure text"},
+      "next_arrival": {"name": "Next arrival"},
+      "available_seats": {"name": "Available seats"},
+      "departures_today": {"name": "Departures today"},
+      "departures_today_text": {"name": "Departures today text"}
+    }
+  }
+}

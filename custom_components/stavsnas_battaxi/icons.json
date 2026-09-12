@@ -1,0 +1,16 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "bookable": {
+        "default": "mdi:ticket-confirmation-outline",
+        "state": {"on": "mdi:ticket-confirmation"}
+      }
+    },
+    "sensor": {
+      "next_departure_text": {"default": "mdi:ferry"},
+      "available_seats": {"default": "mdi:seat-passenger"},
+      "departures_today": {"default": "mdi:ferry"},
+      "departures_today_text": {"default": "mdi:ferry"}
+    }
+  }
+}
