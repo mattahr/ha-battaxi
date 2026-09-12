@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Home Assistant (Docker): attach",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {"host": "localhost", "port": 5678},
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/custom_components",
+          "remoteRoot": "/config/custom_components"
+        }
+      ],
+      "justMyCode": true,
+      "preLaunchTask": "ha: up"
+    },
+    {
+      "name": "pytest: current file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-v"],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

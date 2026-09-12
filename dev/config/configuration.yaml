@@ -1,0 +1,12 @@
+# Minimal Home Assistant configuration for developing the integration.
+default_config:
+
+# Lets VS Code attach on port 5678 (see .vscode/launch.json).
+debugpy:
+  start: true
+  wait: false
+
+logger:
+  default: warning
+  logs:
+    custom_components.stavsnas_battaxi: debug

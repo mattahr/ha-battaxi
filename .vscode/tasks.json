@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ha: up",
+      "type": "shell",
+      "command": "./dev/ha.sh up",
+      "problemMatcher": [],
+      "presentation": {"reveal": "always", "panel": "shared", "clear": true}
+    },
+    {
+      "label": "ha: down",
+      "type": "shell",
+      "command": "./dev/ha.sh down",
+      "problemMatcher": []
+    },
+    {
+      "label": "ha: restart",
+      "type": "shell",
+      "command": "./dev/ha.sh restart",
+      "problemMatcher": []
+    },
+    {
+      "label": "ha: logs",
+      "type": "shell",
+      "command": "./dev/ha.sh logs",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "ha: status",
+      "type": "shell",
+      "command": "./dev/ha.sh status",
+      "problemMatcher": []
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "uv run pytest",
+      "group": {"kind": "test", "isDefault": true},
+      "problemMatcher": []
+    }
+  ]
+}
