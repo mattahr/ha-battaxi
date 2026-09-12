@@ -669,9 +669,40 @@ def test_parse_departures_respects_dst(day: date, offset: str) -> None:
 @pytest.mark.parametrize(
     "payload",
     [
-        {"items": [{"lineId": LINE_ID, "lineName": "x", "departureTime": "10:00", "arrivalTime": "10:30", "bookable": True}]},
-        {"items": [{"departureId": "x", "lineId": LINE_ID, "lineName": "x", "departureTime": "10:00", "arrivalTime": "10:30"}]},
-        {"items": [{"departureId": "x", "lineId": LINE_ID, "lineName": "x", "departureTime": "25:99", "arrivalTime": "10:30", "bookable": True}]},
+        {
+            "items": [
+                {
+                    "lineId": LINE_ID,
+                    "lineName": "x",
+                    "departureTime": "10:00",
+                    "arrivalTime": "10:30",
+                    "bookable": True,
+                }
+            ]
+        },
+        {
+            "items": [
+                {
+                    "departureId": "x",
+                    "lineId": LINE_ID,
+                    "lineName": "x",
+                    "departureTime": "10:00",
+                    "arrivalTime": "10:30",
+                }
+            ]
+        },
+        {
+            "items": [
+                {
+                    "departureId": "x",
+                    "lineId": LINE_ID,
+                    "lineName": "x",
+                    "departureTime": "25:99",
+                    "arrivalTime": "10:30",
+                    "bookable": True,
+                }
+            ]
+        },
         {"items": "not-a-list"},
         {"no_items": []},
         [],
@@ -726,7 +757,13 @@ async def test_client_empty_search_is_not_an_error(
         ({"exc": TimeoutError()}, BattaxiConnectionError),
         ({"status": 429}, BattaxiRateLimitError),
         ({"status": 500}, BattaxiApiError),
-        ({"status": 400, "json": {"error": "querystring/date Required", "statusCode": 400}}, BattaxiApiError),
+        (
+            {
+                "status": 400,
+                "json": {"error": "querystring/date Required", "statusCode": 400},
+            },
+            BattaxiApiError,
+        ),
         ({"text": "<html>not json</html>"}, BattaxiInvalidResponseError),
         ({"json": {"items": [{"id": "only-id"}]}}, BattaxiInvalidResponseError),
     ],
@@ -959,11 +996,15 @@ class BattaxiApi:
                         f"Båttaxi API returned invalid JSON for {path}"
                     ) from err
         except TimeoutError as err:
-            raise BattaxiConnectionError(f"Timeout talking to Båttaxi API ({path})") from err
+            raise BattaxiConnectionError(
+                f"Timeout talking to Båttaxi API ({path})"
+            ) from err
         except ClientResponseError as err:
             raise BattaxiApiError(f"Båttaxi API returned HTTP {err.status}") from err
         except ClientError as err:
-            raise BattaxiConnectionError(f"Error talking to Båttaxi API: {err}") from err
+            raise BattaxiConnectionError(
+                f"Error talking to Båttaxi API: {err}"
+            ) from err
 ```
 
 - [ ] **Step 4: Run tests and ruff**
@@ -1014,7 +1055,9 @@ from .conftest import (
 
 @pytest.fixture
 def sandhamn_line() -> BattaxiLine:
-    return next(line for line in parse_lines(load_json("lines.json")) if line.id == LINE_ID)
+    return next(
+        line for line in parse_lines(load_json("lines.json")) if line.id == LINE_ID
+    )
 
 
 @pytest.fixture
@@ -1022,21 +1065,36 @@ def piers_by_id() -> dict:
     return {pier.id: pier for pier in parse_piers(load_json("piers.json"))}
 
 
-def test_unique_stops_preserves_first_appearance_order(sandhamn_line: BattaxiLine) -> None:
+def test_unique_stops_preserves_first_appearance_order(
+    sandhamn_line: BattaxiLine,
+) -> None:
     assert unique_stops(sandhamn_line) == [
-        STAVSNAS, SANDHAMN, TELEGRAFHOLMEN, TROUVILLE, LOKHOLMEN
+        STAVSNAS,
+        SANDHAMN,
+        TELEGRAFHOLMEN,
+        TROUVILLE,
+        LOKHOLMEN,
     ]
 
 
-def test_origins_are_stops_with_a_later_different_stop(sandhamn_line: BattaxiLine) -> None:
+def test_origins_are_stops_with_a_later_different_stop(
+    sandhamn_line: BattaxiLine,
+) -> None:
     assert origin_pier_ids(sandhamn_line) == [
-        STAVSNAS, SANDHAMN, TELEGRAFHOLMEN, TROUVILLE, LOKHOLMEN
+        STAVSNAS,
+        SANDHAMN,
+        TELEGRAFHOLMEN,
+        TROUVILLE,
+        LOKHOLMEN,
     ]
 
 
 def test_destinations_after_first_stop(sandhamn_line: BattaxiLine) -> None:
     assert destination_pier_ids(sandhamn_line, STAVSNAS) == [
-        SANDHAMN, TELEGRAFHOLMEN, TROUVILLE, LOKHOLMEN
+        SANDHAMN,
+        TELEGRAFHOLMEN,
+        TROUVILLE,
+        LOKHOLMEN,
     ]
 
 
@@ -1044,10 +1102,15 @@ def test_destinations_include_return_leg(sandhamn_line: BattaxiLine) -> None:
     # Telegrafholmen appears twice; everything after either occurrence counts,
     # except Telegrafholmen itself.
     assert destination_pier_ids(sandhamn_line, TELEGRAFHOLMEN) == [
-        TROUVILLE, LOKHOLMEN, SANDHAMN, STAVSNAS
+        TROUVILLE,
+        LOKHOLMEN,
+        SANDHAMN,
+        STAVSNAS,
     ]
     assert destination_pier_ids(sandhamn_line, LOKHOLMEN) == [
-        TELEGRAFHOLMEN, SANDHAMN, STAVSNAS
+        TELEGRAFHOLMEN,
+        SANDHAMN,
+        STAVSNAS,
     ]
 
 
@@ -1065,7 +1128,9 @@ def test_build_route(sandhamn_line: BattaxiLine, piers_by_id: dict) -> None:
     assert route.unique_id == f"{LINE_ID}:{STAVSNAS}:{TELEGRAFHOLMEN}"
 
 
-def test_build_route_rejects_invalid_pair(sandhamn_line: BattaxiLine, piers_by_id: dict) -> None:
+def test_build_route_rejects_invalid_pair(
+    sandhamn_line: BattaxiLine, piers_by_id: dict
+) -> None:
     with pytest.raises(ValueError):
         build_route(sandhamn_line, piers_by_id, STAVSNAS, STAVSNAS)
     with pytest.raises(ValueError):
@@ -1125,9 +1190,7 @@ def build_route(
 ) -> BattaxiRoute:
     """Build a route, validating that the pair is served by the line."""
     if destination_id not in destination_pier_ids(line, origin_id):
-        raise ValueError(
-            f"{line.name} does not serve {origin_id} → {destination_id}"
-        )
+        raise ValueError(f"{line.name} does not serve {origin_id} → {destination_id}")
     try:
         origin = piers_by_id[origin_id]
         destination = piers_by_id[destination_id]
@@ -1236,7 +1299,11 @@ def test_next_departure_none() -> None:
 
 def test_departures_today_list() -> None:
     text = format_departures_today(
-        [departure("15:10", seats=12), departure("17:10", seats=None), departure("19:40", seats=47)]
+        [
+            departure("15:10", seats=12),
+            departure("17:10", seats=None),
+            departure("19:40", seats=47),
+        ]
     )
     assert text == "15:10 – 12 platser | 17:10 | 19:40 – 47 platser"
 
@@ -1246,7 +1313,11 @@ def test_departures_today_empty() -> None:
 
 
 def test_departures_today_is_truncated_to_255_chars() -> None:
-    many = [departure(f"{hour:02d}:{minute:02d}") for hour in range(5, 23) for minute in (0, 30)]
+    many = [
+        departure(f"{hour:02d}:{minute:02d}")
+        for hour in range(5, 23)
+        for minute in (0, 30)
+    ]
     text = format_departures_today(many)
     assert len(text) <= 255
     assert text.endswith("…")
@@ -1385,7 +1456,9 @@ async def make_coordinator(
 ) -> BattaxiCoordinator:
     config_entry.add_to_hass(hass)
     api = BattaxiApi(async_get_clientsession(hass), timezone=TZ)
-    return BattaxiCoordinator(hass, config_entry, api, BattaxiRoute.from_config(ROUTE_DATA))
+    return BattaxiCoordinator(
+        hass, config_entry, api, BattaxiRoute.from_config(ROUTE_DATA)
+    )
 
 
 async def test_next_departure_today_filters_passed_and_other_lines(
@@ -1395,7 +1468,9 @@ async def test_next_departure_today_filters_passed_and_other_lines(
     freezer: FrozenDateTimeFactory,
 ) -> None:
     freezer.move_to("2026-09-12 17:00:00+02:00")
-    aioclient_mock.get(search_url("2026-09-12"), json=load_json("search_with_departures.json"))
+    aioclient_mock.get(
+        search_url("2026-09-12"), json=load_json("search_with_departures.json")
+    )
     coordinator = await make_coordinator(hass, config_entry)
 
     await coordinator.async_refresh()
@@ -1416,7 +1491,9 @@ async def test_departure_exactly_now_is_not_passed(
     freezer: FrozenDateTimeFactory,
 ) -> None:
     freezer.move_to("2026-09-12 16:40:00+02:00")
-    aioclient_mock.get(search_url("2026-09-12"), json=load_json("search_with_departures.json"))
+    aioclient_mock.get(
+        search_url("2026-09-12"), json=load_json("search_with_departures.json")
+    )
     coordinator = await make_coordinator(hass, config_entry)
 
     await coordinator.async_refresh()
@@ -1437,7 +1514,9 @@ async def test_rolls_over_to_next_day_and_caches_it(
     freezer.move_to("2026-09-12 12:00:00+02:00")
     aioclient_mock.get(search_url("2026-09-12"), json=load_json("search_empty.json"))
     aioclient_mock.get(search_url("2026-09-13"), json=load_json("search_empty.json"))
-    aioclient_mock.get(search_url("2026-09-14"), json=load_json("search_not_bookable.json"))
+    aioclient_mock.get(
+        search_url("2026-09-14"), json=load_json("search_not_bookable.json")
+    )
     coordinator = await make_coordinator(hass, config_entry)
 
     await coordinator.async_refresh()
@@ -1452,7 +1531,10 @@ async def test_rolls_over_to_next_day_and_caches_it(
     freezer.tick(timedelta(minutes=5))
     await coordinator.async_refresh()
     assert aioclient_mock.call_count == 4
-    assert coordinator.data.next_departure.departure.isoformat() == "2026-09-14T19:10:00+02:00"
+    assert (
+        coordinator.data.next_departure.departure.isoformat()
+        == "2026-09-14T19:10:00+02:00"
+    )
 
     # After the TTL the future days are fetched again.
     freezer.tick(timedelta(hours=6, minutes=1))
@@ -1486,7 +1568,9 @@ async def test_midnight_rollover_drops_stale_cache(
 ) -> None:
     freezer.move_to("2026-09-12 23:00:00+02:00")
     aioclient_mock.get(search_url("2026-09-12"), json=load_json("search_empty.json"))
-    aioclient_mock.get(search_url("2026-09-13"), json=load_json("search_not_bookable.json"))
+    aioclient_mock.get(
+        search_url("2026-09-13"), json=load_json("search_not_bookable.json")
+    )
     coordinator = await make_coordinator(hass, config_entry)
     await coordinator.async_refresh()
     assert coordinator.data.next_departure.departure.date().isoformat() == "2026-09-13"
@@ -1496,11 +1580,16 @@ async def test_midnight_rollover_drops_stale_cache(
 
     # 2026-09-13 is now "today" and is always re-fetched, not served from cache.
     assert coordinator.data.today.isoformat() == "2026-09-13"
-    assert [d.id for d in coordinator.data.departures_today] == ["6a75c74b29f5bc095722dc99"]
+    assert [d.id for d in coordinator.data.departures_today] == [
+        "6a75c74b29f5bc095722dc99"
+    ]
     assert [entry["date"] for entry in coordinator.cache_summary()] == []
 
 
-@pytest.mark.parametrize("mock_kwargs", [{"status": 500}, {"status": 429}, {"exc": TimeoutError()}, {"text": "nope"}])
+@pytest.mark.parametrize(
+    "mock_kwargs",
+    [{"status": 500}, {"status": 429}, {"exc": TimeoutError()}, {"text": "nope"}],
+)
 async def test_api_errors_become_update_failed(
     hass: HomeAssistant,
     aioclient_mock: AiohttpClientMocker,
@@ -1639,7 +1728,9 @@ class BattaxiCoordinator(DataUpdateCoordinator[BattaxiData]):
         _LOGGER.debug("No departures within %d days", MAX_LOOKAHEAD_DAYS)
         return None
 
-    async def _async_cached_day(self, day: date, now: datetime) -> list[BattaxiDeparture]:
+    async def _async_cached_day(
+        self, day: date, now: datetime
+    ) -> list[BattaxiDeparture]:
         cached = self._cache.get(day)
         if cached is not None and now - cached.fetched_at < FUTURE_CACHE_TTL:
             _LOGGER.debug("Using cached result for %s", day)
@@ -1788,9 +1879,14 @@ async def test_all_entities_with_upcoming_departure(
     assert next_departure.attributes["origin"] == "Stavsnäs"
     assert next_departure.attributes["destination"] == "Telegrafholmen"
     assert next_departure.attributes["departure_id"] == "6a75c74b29f5bc095722dc32"
-    assert next_departure.attributes["friendly_name"] == "Stavsnäs → Telegrafholmen Next departure"
+    assert (
+        next_departure.attributes["friendly_name"]
+        == "Stavsnäs → Telegrafholmen Next departure"
+    )
 
-    assert get_state(hass, "sensor", "next_arrival").state == "2026-09-12T17:45:00+00:00"
+    assert (
+        get_state(hass, "sensor", "next_arrival").state == "2026-09-12T17:45:00+00:00"
+    )
     assert (
         get_state(hass, "sensor", "next_departure_text").state
         == "19:10 Stavsnäs → 19:45 Telegrafholmen · 60 lediga"
@@ -1801,9 +1897,16 @@ async def test_all_entities_with_upcoming_departure(
     departures_today = get_state(hass, "sensor", "departures_today")
     assert departures_today.state == "1"
     assert departures_today.attributes["departures"] == [
-        {"departure": "19:10", "arrival": "19:45", "available_seats": 60, "bookable": True}
+        {
+            "departure": "19:10",
+            "arrival": "19:45",
+            "available_seats": 60,
+            "bookable": True,
+        }
     ]
-    assert get_state(hass, "sensor", "departures_today_text").state == "19:10 – 60 platser"
+    assert (
+        get_state(hass, "sensor", "departures_today_text").state == "19:10 – 60 platser"
+    )
 
 
 async def test_not_bookable_is_off_not_cancelled(
@@ -1818,7 +1921,9 @@ async def test_not_bookable_is_off_not_cancelled(
 
     assert get_state(hass, "binary_sensor", "bookable").state == STATE_OFF
     assert get_state(hass, "sensor", "available_seats").state == "0"
-    assert get_state(hass, "sensor", "next_departure").state == "2026-09-12T17:10:00+00:00"
+    assert (
+        get_state(hass, "sensor", "next_departure").state == "2026-09-12T17:10:00+00:00"
+    )
     assert (
         get_state(hass, "sensor", "next_departure_text").state
         == "19:10 Stavsnäs → 19:45 Telegrafholmen · 0 lediga · ej bokningsbar"
@@ -1836,7 +1941,10 @@ async def test_missing_seats_is_unknown(
     await setup_entry(hass, config_entry)
 
     assert get_state(hass, "sensor", "available_seats").state == STATE_UNKNOWN
-    assert get_state(hass, "sensor", "next_departure_text").state == "19:10 Stavsnäs → 19:45 Telegrafholmen"
+    assert (
+        get_state(hass, "sensor", "next_departure_text").state
+        == "19:10 Stavsnäs → 19:45 Telegrafholmen"
+    )
 
 
 async def test_no_departures_at_all(
@@ -1855,7 +1963,10 @@ async def test_no_departures_at_all(
     assert get_state(hass, "sensor", "available_seats").state == STATE_UNKNOWN
     assert get_state(hass, "binary_sensor", "bookable").state == STATE_UNKNOWN
     assert get_state(hass, "sensor", "departures_today").state == "0"
-    assert get_state(hass, "sensor", "departures_today_text").state == "Inga fler avgångar idag"
+    assert (
+        get_state(hass, "sensor", "departures_today_text").state
+        == "Inga fler avgångar idag"
+    )
 
 
 async def test_entities_unavailable_after_api_failure(
@@ -1885,7 +1996,9 @@ async def test_entities_unavailable_after_api_failure(
     freezer.tick(UPDATE_INTERVAL)
     async_fire_time_changed(hass)
     await hass.async_block_till_done()
-    assert get_state(hass, "sensor", "next_departure").state == "2026-09-12T17:10:00+00:00"
+    assert (
+        get_state(hass, "sensor", "next_departure").state == "2026-09-12T17:10:00+00:00"
+    )
 ```
 
 Note: timestamp sensor states are rendered by HA in UTC (`17:10:00+00:00` == 19:10 Stockholm).
@@ -2016,7 +2129,9 @@ class BattaxiSensorEntityDescription(SensorEntityDescription):
     attributes_fn: Callable[[BattaxiData, BattaxiRoute], dict[str, Any]] | None = None
 
 
-def _next_departure_attributes(data: BattaxiData, route: BattaxiRoute) -> dict[str, Any]:
+def _next_departure_attributes(
+    data: BattaxiData, route: BattaxiRoute
+) -> dict[str, Any]:
     if data.next_departure is None:
         return {}
     return {
@@ -2027,7 +2142,9 @@ def _next_departure_attributes(data: BattaxiData, route: BattaxiRoute) -> dict[s
     }
 
 
-def _departures_today_attributes(data: BattaxiData, route: BattaxiRoute) -> dict[str, Any]:
+def _departures_today_attributes(
+    data: BattaxiData, route: BattaxiRoute
+) -> dict[str, Any]:
     return {
         "departures": [
             {
@@ -2046,24 +2163,32 @@ SENSORS: tuple[BattaxiSensorEntityDescription, ...] = (
         key="next_departure",
         translation_key="next_departure",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: data.next_departure.departure if data.next_departure else None,
+        value_fn=lambda data, _: (
+            data.next_departure.departure if data.next_departure else None
+        ),
         attributes_fn=_next_departure_attributes,
     ),
     BattaxiSensorEntityDescription(
         key="next_departure_text",
         translation_key="next_departure_text",
-        value_fn=lambda data, route: format_next_departure(data.next_departure, route, data.today),
+        value_fn=lambda data, route: format_next_departure(
+            data.next_departure, route, data.today
+        ),
     ),
     BattaxiSensorEntityDescription(
         key="next_arrival",
         translation_key="next_arrival",
         device_class=SensorDeviceClass.TIMESTAMP,
-        value_fn=lambda data, _: data.next_departure.arrival if data.next_departure else None,
+        value_fn=lambda data, _: (
+            data.next_departure.arrival if data.next_departure else None
+        ),
     ),
     BattaxiSensorEntityDescription(
         key="available_seats",
         translation_key="available_seats",
-        value_fn=lambda data, _: data.next_departure.available_seats if data.next_departure else None,
+        value_fn=lambda data, _: (
+            data.next_departure.available_seats if data.next_departure else None
+        ),
     ),
     BattaxiSensorEntityDescription(
         key="departures_today",
@@ -2086,7 +2211,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensors for a route."""
     coordinator = entry.runtime_data
-    async_add_entities(BattaxiSensor(coordinator, description) for description in SENSORS)
+    async_add_entities(
+        BattaxiSensor(coordinator, description) for description in SENSORS
+    )
 
 
 class BattaxiSensor(BattaxiEntity, SensorEntity):
@@ -2368,7 +2495,11 @@ async def test_full_user_flow(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "origin"
     assert option_values(result, CONF_ORIGIN) == [
-        STAVSNAS, SANDHAMN, TELEGRAFHOLMEN, TROUVILLE, LOKHOLMEN
+        STAVSNAS,
+        SANDHAMN,
+        TELEGRAFHOLMEN,
+        TROUVILLE,
+        LOKHOLMEN,
     ]
 
     result = await hass.config_entries.flow.async_configure(
@@ -2377,7 +2508,10 @@ async def test_full_user_flow(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "destination"
     assert option_values(result, CONF_DESTINATION) == [
-        SANDHAMN, TELEGRAFHOLMEN, TROUVILLE, LOKHOLMEN
+        SANDHAMN,
+        TELEGRAFHOLMEN,
+        TROUVILLE,
+        LOKHOLMEN,
     ]
 
     result = await hass.config_entries.flow.async_configure(
@@ -2425,8 +2559,12 @@ async def test_duplicate_route_aborts(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_LINE: LINE_ID})
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_ORIGIN: STAVSNAS})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_LINE: LINE_ID}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_ORIGIN: STAVSNAS}
+    )
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_DESTINATION: TELEGRAFHOLMEN}
     )
@@ -2435,7 +2573,9 @@ async def test_duplicate_route_aborts(
 
 
 async def test_search_error_shows_error_then_recovers(
-    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_setup_entry: AsyncMock
+    hass: HomeAssistant,
+    aioclient_mock: AiohttpClientMocker,
+    mock_setup_entry: AsyncMock,
 ) -> None:
     aioclient_mock.get(PIERS_URL, json=load_json("piers.json"))
     aioclient_mock.get(LINES_URL, json=load_json("lines.json"))
@@ -2444,8 +2584,12 @@ async def test_search_error_shows_error_then_recovers(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_LINE: LINE_ID})
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_ORIGIN: STAVSNAS})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_LINE: LINE_ID}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_ORIGIN: STAVSNAS}
+    )
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_DESTINATION: TELEGRAFHOLMEN}
     )
@@ -2473,9 +2617,13 @@ async def test_reconfigure_changes_route(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
 
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_LINE: LINE_ID})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_LINE: LINE_ID}
+    )
     assert result["step_id"] == "origin"
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_ORIGIN: STAVSNAS})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_ORIGIN: STAVSNAS}
+    )
     assert result["step_id"] == "destination"
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_DESTINATION: SANDHAMN}
@@ -2503,8 +2651,12 @@ async def test_reconfigure_to_existing_route_aborts(
     config_entry.add_to_hass(hass)
 
     result = await config_entry.start_reconfigure_flow(hass)
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_LINE: LINE_ID})
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_ORIGIN: STAVSNAS})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_LINE: LINE_ID}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_ORIGIN: STAVSNAS}
+    )
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {CONF_DESTINATION: SANDHAMN}
     )
@@ -2529,7 +2681,11 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import SOURCE_RECONFIGURE, ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
+    ConfigFlow,
+    ConfigFlowResult,
+)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     SelectOptionDict,
@@ -2619,7 +2775,9 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
             SelectOptionDict(value=line.id, label=line.name)
             for line in self._lines.values()
         ]
-        return self.async_show_form(step_id=step_id, data_schema=_select(CONF_LINE, options))
+        return self.async_show_form(
+            step_id=step_id, data_schema=_select(CONF_LINE, options)
+        )
 
     async def async_step_origin(
         self, user_input: dict[str, Any] | None = None
@@ -2632,7 +2790,9 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="origin",
-            data_schema=_select(CONF_ORIGIN, self._pier_options(origin_pier_ids(self._line))),
+            data_schema=_select(
+                CONF_ORIGIN, self._pier_options(origin_pier_ids(self._line))
+            ),
             description_placeholders={"line": self._line.name},
         )
 
@@ -2647,7 +2807,10 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 route = build_route(
-                    self._line, self._piers, self._origin_id, user_input[CONF_DESTINATION]
+                    self._line,
+                    self._piers,
+                    self._origin_id,
+                    user_input[CONF_DESTINATION],
                 )
             except ValueError:
                 errors["base"] = "invalid_route"

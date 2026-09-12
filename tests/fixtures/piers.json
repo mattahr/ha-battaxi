@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "id": "6a31a5430bdad9fa1552c74a",
+      "name": "Bullerö",
+      "area": "Bullerö",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.199625,
+        "lng": 18.84902
+      }
+    },
+    {
+      "id": "6a31a5430bdad9fa1552c749",
+      "name": "Idöborg",
+      "area": "Bullerö",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.204284,
+        "lng": 18.757739
+      }
+    },
+    {
+      "id": "6a31a5470bdad9fa1552c80c",
+      "name": "Lökholmen",
+      "area": "Sandhamn",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.289266,
+        "lng": 18.928826
+      }
+    },
+    {
+      "id": "6a31a5470bdad9fa1552c809",
+      "name": "Sandhamn",
+      "area": "Sandhamn",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.28847,
+        "lng": 18.915528
+      }
+    },
+    {
+      "id": "6a31a5430bdad9fa1552c748",
+      "name": "Stavsnäs",
+      "area": "Bullerö",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.286659,
+        "lng": 18.704942
+      }
+    },
+    {
+      "id": "6a31a5470bdad9fa1552c80a",
+      "name": "Telegrafholmen",
+      "area": "Sandhamn",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.289812379249746,
+        "lng": 18.919855693652714
+      }
+    },
+    {
+      "id": "6a31a5470bdad9fa1552c80b",
+      "name": "Trouville",
+      "area": "Sandhamn",
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.280028,
+        "lng": 18.930677
+      }
+    },
+    {
+      "id": "6a31a5430bdad9fa1552c762",
+      "name": "Abborrudden - Magnusson",
+      "area": null,
+      "canBoard": true,
+      "canAlight": true,
+      "location": {
+        "lat": 59.206695,
+        "lng": 18.719068
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "domain": "stavsnas_battaxi",
+  "name": "Stavsnäs Båttaxi",
+  "codeowners": ["@mattahr"],
+  "config_flow": true,
+  "documentation": "https://github.com/mattahr/ha-battaxi",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/mattahr/ha-battaxi/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

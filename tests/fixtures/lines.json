@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "id": "6a31a5430bdad9fa1552c74b",
+      "name": "Bullerölinjen",
+      "stops": [
+        "6a31a5430bdad9fa1552c748",
+        "6a31a5430bdad9fa1552c749",
+        "6a31a5430bdad9fa1552c74a",
+        "6a31a5430bdad9fa1552c74a",
+        "6a31a5430bdad9fa1552c749",
+        "6a31a5430bdad9fa1552c748"
+      ],
+      "passengerTypes": [
+        {
+          "key": "adult",
+          "label": {
+            "sv": "Vuxen & Senior",
+            "en": "Adult & Senior"
+          },
+          "price": 15000
+        }
+      ],
+      "fuelSurcharge": {
+        "enabled": false,
+        "amount": 0
+      }
+    },
+    {
+      "id": "6a31a5470bdad9fa1552c80d",
+      "name": "Sandhamnslinjen",
+      "stops": [
+        "6a31a5430bdad9fa1552c748",
+        "6a31a5470bdad9fa1552c809",
+        "6a31a5470bdad9fa1552c80a",
+        "6a31a5470bdad9fa1552c80b",
+        "6a31a5470bdad9fa1552c80c",
+        "6a31a5470bdad9fa1552c80a",
+        "6a31a5470bdad9fa1552c809",
+        "6a31a5430bdad9fa1552c748"
+      ],
+      "passengerTypes": [
+        {
+          "key": "adult",
+          "label": {
+            "sv": "Vuxen",
+            "en": "Adult"
+          },
+          "price": 11000
+        }
+      ],
+      "fuelSurcharge": {
+        "enabled": true,
+        "amount": 2000
+      }
+    }
+  ]
+}

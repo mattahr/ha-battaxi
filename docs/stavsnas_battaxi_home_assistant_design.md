@@ -903,19 +903,16 @@ Exempel på internt gränssnitt:
 
 ```python
 class BattaxiApi:
-    async def async_get_piers(self) -> list[BattaxiPier]:
-        ...
+    async def async_get_piers(self) -> list[BattaxiPier]: ...
 
-    async def async_get_lines(self) -> list[BattaxiLine]:
-        ...
+    async def async_get_lines(self) -> list[BattaxiLine]: ...
 
     async def async_search(
         self,
         origin_id: str,
         destination_id: str,
         date: date,
-    ) -> list[BattaxiDeparture]:
-        ...
+    ) -> list[BattaxiDeparture]: ...
 ```
 
 Använd Home Assistants gemensamma aiohttp-session:

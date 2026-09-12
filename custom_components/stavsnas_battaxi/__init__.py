@@ -1,0 +1,1 @@
+"""The Stavsnäs Båttaxi integration."""

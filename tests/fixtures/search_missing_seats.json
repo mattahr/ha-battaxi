@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "departureId": "6a75c74b29f5bc095722dc98",
+      "lineId": "6a31a5470bdad9fa1552c80d",
+      "lineName": "Sandhamnslinjen",
+      "departureTime": "19:10",
+      "arrivalTime": "19:45",
+      "boardStopIndex": 0,
+      "alightStopIndex": 2,
+      "bookable": true
+    }
+  ]
+}
