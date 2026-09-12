@@ -3,7 +3,7 @@
 **Designförslag / implementation plan**  
 **Version:** 0.1  
 **Datum:** 2026-09-12  
-**Status:** Förslag för MVP
+**Status:** MVP implementerad 2026-09-12 (se §31 och README.md)
 
 ---
 
@@ -1561,11 +1561,34 @@ Stopplistorna kan vara mycket långa: Nämdölinjen 227 stopp (169 unika), `namd
 | Tidszon | API-tider tolkas i `Europe/Stockholm` via `dt_util.get_time_zone`; "nu" via `dt_util.now()`. "Idag" = dagens datum i Stockholm. |
 | Cache (§13.3) | Idag hämtas varje poll (5 min). Framtida datum cachas 6 h (även tomma). Lookahead max 14 dagar och körs bara när idag saknar kvarvarande avgångar. |
 | Textsensorer | Svenska strängar enligt §10.2 och §10.7. Entity-namn översätts via `translations/sv.json` och `translations/en.json`. |
-| `codeowners` | Tom lista tills GitHub-handle bestämts. |
+| `codeowners` | `@mattahr` (repo: https://github.com/mattahr/ha-battaxi). |
+| Nästa avgång text på annan dag | Prefix `D/M ` (t.ex. `13/9 10:10 Stavsnäs → …`) när nästa avgång inte är idag, så att strängen inte kan misstolkas som dagens avgång. |
+| Statslängd | Textsensorer trunkeras till 255 tecken med `…` (Home Assistants gräns för state). |
+| Ikoner | `icons.json` med mdi-ikoner för text-, plats- och bokningssensorerna; timestamp-sensorerna använder device-class-ikonen. |
 
-## 31.3 Utvecklingsmiljö
+## 31.3 Implementerad filstruktur
+
+Utöver strukturen i §14 finns:
+
+```text
+custom_components/stavsnas_battaxi/
+├── routes.py        # giltiga riktade sträckor ur linjens ordnade stopplista
+├── formatting.py    # svenska visningssträngar för textsensorerna
+├── diagnostics.py   # diagnostics för config entry
+├── icons.json
+└── translations/en.json (kopia av strings.json)
+tests/
+├── fixtures/        # piers, lines, search_* – hämtade från riktiga API-svar 2026-09-12
+└── test_*.py        # api, routes, formatting, coordinator, config_flow, init, sensor, diagnostics, translations
+```
+
+Implementationsplanen med alla steg finns i `docs/superpowers/plans/2026-09-12-stavsnas-battaxi-integration.md`.
+
+## 31.4 Utvecklingsmiljö
 
 - `docker-compose.yml` kör `ghcr.io/home-assistant/home-assistant:stable` med `./custom_components` monterad i `/config/custom_components` och `./dev/config` som `/config`. Portar 8123 (UI) och 5678 (debugpy).
 - `dev/config/configuration.yaml` aktiverar `debugpy` (`start: true`, `wait: false`) och debug-loggning för integrationen.
 - `.vscode/launch.json`: F5 startar containern (preLaunchTask väntar på port 5678) och attachar debuggern med `pathMappings` mot `/config/custom_components`.
 - Lokala tester körs med `uv` och `pytest-homeassistant-custom-component` (Python ≥ 3.14, HA 2026.9.x).
+- `dev/ha.sh up` (körs av F5) vägrar starta om `HA_PORT`/`DEBUGPY_PORT` redan används av något annat – t.ex. en annan HA-container – och skriver ut vad som håller porten. Portarna kan överstyras i `.env` (se `.env.example`).
+- Verifierat 2026-09-12: config flow, alla sju entiteter och diagnostics fungerar mot det riktiga API:t i containern (HA 2026.9.1).
