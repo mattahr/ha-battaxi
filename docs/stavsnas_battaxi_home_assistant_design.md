@@ -1465,3 +1465,110 @@ Detta ger redan en komplett och användbar integration utan att gissa om instäl
 - Stavsnäs Båttaxi: https://www.battaxi.se/
 - Home Assistant Developer Docs: https://developers.home-assistant.io/
 
+
+---
+
+# 31. Verifierat API och beslut inför implementation (2026-09-12)
+
+Detta avsnitt kompletterar §4, §7.2 och §27 med vad som faktiskt observerats mot `api.battaxi.se` samt de beslut som togs inför implementationen.
+
+## 31.1 Verifierade scheman
+
+### `/api/public/piers`
+
+```json
+{
+  "items": [
+    {
+      "id": "6a31a5470bdad9fa1552c80a",
+      "name": "Telegrafholmen",
+      "area": "Sandhamn",
+      "canBoard": true,
+      "canAlight": true,
+      "location": { "lat": 59.29, "lng": 18.92 }
+    }
+  ]
+}
+```
+
+324 bryggor. `area` kan vara `null`. Obligatoriska fält för integrationen: `id`, `name`.
+
+### `/api/public/lines`
+
+```json
+{
+  "items": [
+    {
+      "id": "6a31a5470bdad9fa1552c80d",
+      "name": "Sandhamnslinjen",
+      "stops": ["<pier-id>", "..."],
+      "passengerTypes": [ ... ],
+      "fuelSurcharge": { "enabled": true, "amount": 2000 }
+    }
+  ]
+}
+```
+
+5 linjer. `stops` är en **ordnad lista av brygg-ID:n som inkluderar returresan**. Sandhamnslinjen:
+
+```text
+Stavsnäs → Sandhamn → Telegrafholmen → Trouville → Lökholmen → Telegrafholmen → Sandhamn → Stavsnäs
+```
+
+Giltiga riktade sträckor är därmed par `(stops[i], stops[j])` med `i < j` och `stops[i] != stops[j]`. Integrationen behöver **inte** anta symmetrisk trafik – returriktningen finns explicit i listan.
+
+Stopplistorna kan vara mycket långa: Nämdölinjen 227 stopp (169 unika), `namdo-runmaro-linjen` 348 stopp (288 unika). Alla `stops`-ID:n fanns i `/piers`. Obligatoriska fält: `id`, `name`, `stops`.
+
+### `/api/search?origin=<id>&dest=<id>&date=YYYY-MM-DD`
+
+```json
+{
+  "items": [
+    {
+      "departureId": "6a75c74b29f5bc095722dc32",
+      "lineId": "6a31a5470bdad9fa1552c80d",
+      "lineName": "Sandhamnslinjen",
+      "departureTime": "19:10",
+      "arrivalTime": "19:45",
+      "durationMinutes": 35,
+      "availableSeats": 60,
+      "bookable": true,
+      "boardStopIndex": 0,
+      "alightStopIndex": 2,
+      "prices": { "adult": 11000 },
+      "passengerTypes": [ ... ],
+      "fuelSurcharge": { "enabled": true, "amount": 2000 }
+    }
+  ]
+}
+```
+
+- Tider är `HH:MM` i lokal svensk tid; datumet kommer från frågan.
+- Sökningen är **inte linjebunden** – svaret kan innehålla flera `lineId`.
+- Okänt brygg-ID ger `{"items": []}` med HTTP 200, inte ett fel.
+- Saknad `date` ger HTTP 400 `{"error": "...", "statusCode": 400}`.
+- Passerad avgång samma dag returneras med `bookable: false` (bekräftar §4.3).
+- Obligatoriska fält: `departureId`, `lineId`, `lineName`, `departureTime`, `arrivalTime`, `bookable`. `availableSeats` och `durationMinutes` är valfria (saknas → `None`).
+
+## 31.2 Beslut
+
+| Fråga | Beslut |
+|---|---|
+| Config flow (ersätter §7.2) | Tre steg: **Linje** → **Från brygga** (linjens unika stopp i ordning) → **Till brygga** (endast bryggor som förekommer efter vald origin i stopplistan). Sökbara dropdowns. |
+| Config entry-titel | `<origin> → <destination>` |
+| Config entry unique_id | `<line_id>:<origin_id>:<destination_id>` (enligt §8) |
+| Device-identifier (ersätter §9) | `(DOMAIN, entry.entry_id)` så att reconfigure av sträcka uppdaterar samma device i stället för att lämna föräldralösa devices/entities. Namn, manufacturer och model sätts från entry-data. |
+| Entity unique_id | `<entry_id>_<key>` |
+| Reconfigure (§18) | Samma tre steg som setup. Nytt unique_id sätts på entryn; krock med annan entry avbryter med `already_configured`. |
+| Linjefilter | Coordinator behåller endast avgångar med konfigurerat `lineId`. |
+| Tidszon | API-tider tolkas i `Europe/Stockholm` via `dt_util.get_time_zone`; "nu" via `dt_util.now()`. "Idag" = dagens datum i Stockholm. |
+| Cache (§13.3) | Idag hämtas varje poll (5 min). Framtida datum cachas 6 h (även tomma). Lookahead max 14 dagar och körs bara när idag saknar kvarvarande avgångar. |
+| Textsensorer | Svenska strängar enligt §10.2 och §10.7. Entity-namn översätts via `translations/sv.json` och `translations/en.json`. |
+| `codeowners` | Tom lista tills GitHub-handle bestämts. |
+
+## 31.3 Utvecklingsmiljö
+
+- `docker-compose.yml` kör `ghcr.io/home-assistant/home-assistant:stable` med `./custom_components` monterad i `/config/custom_components` och `./dev/config` som `/config`. Portar 8123 (UI) och 5678 (debugpy).
+- `dev/config/configuration.yaml` aktiverar `debugpy` (`start: true`, `wait: false`) och debug-loggning för integrationen.
+- `.vscode/launch.json`: F5 startar containern (preLaunchTask väntar på port 5678) och attachar debuggern med `pathMappings` mot `/config/custom_components`.
+- Lokala tester körs med `uv` och `pytest-homeassistant-custom-component` (Python ≥ 3.14, HA 2026.9.x).
