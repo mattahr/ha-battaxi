@@ -53,7 +53,7 @@ tests/
 │   test_config_flow.py, test_init.py, test_sensor.py, test_diagnostics.py
 dev/ha.sh, dev/config/configuration.yaml, docker-compose.yml, .env.example
 .vscode/{launch,tasks,settings,extensions}.json
-hacs.json, README.md, LICENSE, .gitignore, .github/workflows/{validate,tests}.yml
+hacs.json, README.md, LICENSE, .gitignore
 ```
 
 ---
@@ -3290,10 +3290,10 @@ Finally `./dev/ha.sh down`.
 
 ---
 
-### Task 10: HACS packaging, README, license, CI and documentation update
+### Task 10: HACS packaging, README, license and documentation update
 
 **Files:**
-- Create: `hacs.json`, `LICENSE`, `README.md`, `.github/workflows/validate.yml`, `.github/workflows/tests.yml`
+- Create: `hacs.json`, `LICENSE`, `README.md`
 - Modify: `docs/stavsnas_battaxi_home_assistant_design.md` (status line + §31 dev-env notes if anything changed during implementation)
 
 - [ ] **Step 1: Write `hacs.json`**
@@ -3310,54 +3310,7 @@ Finally `./dev/ha.sh down`.
 
 Standard MIT text with `Copyright (c) 2026 Mattias Ahrens`.
 
-- [ ] **Step 3: Write `.github/workflows/validate.yml` and `tests.yml`**
-
-`validate.yml`:
-
-```yaml
-name: Validate
-
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: "0 4 * * 1"
-
-jobs:
-  hassfest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: home-assistant/actions/hassfest@master
-  hacs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hacs/action@main
-        with:
-          category: integration
-```
-
-`tests.yml`:
-
-```yaml
-name: Tests
-
-on:
-  push:
-  pull_request:
-
-jobs:
-  pytest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --group dev
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest
-```
+- [ ] **Step 3: (removed) No GitHub workflows — decided 2026-09-12; validation is run locally.**
 
 - [ ] **Step 4: Write `README.md`**
 

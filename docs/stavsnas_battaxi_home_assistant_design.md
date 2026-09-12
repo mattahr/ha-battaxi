@@ -1564,6 +1564,7 @@ Stopplistorna kan vara mycket långa: Nämdölinjen 227 stopp (169 unika), `namd
 | `codeowners` | `@mattahr` (repo: https://github.com/mattahr/ha-battaxi). |
 | Nästa avgång text på annan dag | Prefix `D/M ` (t.ex. `13/9 10:10 Stavsnäs → …`) när nästa avgång inte är idag, så att strängen inte kan misstolkas som dagens avgång. |
 | Statslängd | Textsensorer trunkeras till 255 tecken med `…` (Home Assistants gräns för state). |
+| GitHub Actions | **Inga workflows** i repot (beslut 2026-09-12) – `.github/` i §25 utgår. Validering körs lokalt: `uv run pytest`, `uv run ruff check .`. |
 | Ikoner | `icons.json` med mdi-ikoner för text-, plats- och bokningssensorerna; timestamp-sensorerna använder device-class-ikonen. |
 
 ## 31.3 Implementerad filstruktur
