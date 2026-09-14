@@ -55,13 +55,12 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
         self._line: BattaxiLine | None = None
         self._origin_id: str | None = None
 
-    @property
-    def api(self) -> BattaxiApi:
+    async def _async_api(self) -> BattaxiApi:
         """Lazily create the API client."""
         if self._api is None:
             self._api = BattaxiApi(
                 async_get_clientsession(self.hass),
-                timezone=dt_util.get_time_zone(TIMEZONE),
+                timezone=await dt_util.async_get_time_zone(TIMEZONE),
             )
         return self._api
 
@@ -81,9 +80,10 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
         self, step_id: str, user_input: dict[str, Any] | None
     ) -> ConfigFlowResult:
         if not self._lines:
+            api = await self._async_api()
             try:
                 piers, lines = await asyncio.gather(
-                    self.api.async_get_piers(), self.api.async_get_lines()
+                    api.async_get_piers(), api.async_get_lines()
                 )
             except BattaxiApiError as err:
                 _LOGGER.warning("Could not fetch Båttaxi reference data: %s", err)
@@ -141,12 +141,13 @@ class BattaxiConfigFlow(ConfigFlow, domain=DOMAIN):
             except ValueError:
                 errors["base"] = "invalid_route"
             else:
+                api = await self._async_api()
                 try:
                     # Zero departures is fine; we only verify the API accepts the ids.
-                    await self.api.async_search(
+                    await api.async_search(
                         route.origin_id,
                         route.destination_id,
-                        dt_util.now(self.api.timezone).date(),
+                        dt_util.now(api.timezone).date(),
                     )
                 except BattaxiApiError as err:
                     _LOGGER.warning("Could not verify route with Båttaxi API: %s", err)

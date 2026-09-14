@@ -16,7 +16,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: BattaxiConfigEntry) -> b
     """Set up one configured route from a config entry."""
     route = BattaxiRoute.from_config(entry.data)
     api = BattaxiApi(
-        async_get_clientsession(hass), timezone=dt_util.get_time_zone(TIMEZONE)
+        async_get_clientsession(hass),
+        timezone=await dt_util.async_get_time_zone(TIMEZONE),
     )
     coordinator = BattaxiCoordinator(hass, entry, api, route)
     await coordinator.async_config_entry_first_refresh()
